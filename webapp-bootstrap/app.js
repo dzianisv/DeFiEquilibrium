@@ -4,7 +4,7 @@ const contracts = {
 
 
 const txOptions = {
-    gasLimit: 1 * 10**6
+    gasLimit: 1 * 10 ** 6
 };
 
 const ERC4626_ABI = [
@@ -43,10 +43,80 @@ async function connectWallet() {
     }
 }
 
+async function setupWalletButtons() {
+    let provider;
+    const connectWalletButton = document.getElementById('connectWalletBtn');
+    const disconnectWalletButton = document.getElementById('disconnectWalletBtn');
+
+    async function onConnectWallet() {
+        if (window.ethereum) {
+            try {
+                const accounts = await connectWallet();
+                console.log("Connected to the wallet", accounts);
+                connectWalletButton.style.display = 'none';
+                disconnectWalletButton.style.display = 'block';
+            } catch (error) {
+                console.error("User denied account access");
+            }
+        } else {
+            console.error('Non-Ethereum browser detected. Consider installing MetaMask!');
+        }
+    }
+
+    function onDisconnectWallet() {
+        provider = null;
+        connectWalletButton.style.display = 'block';
+        disconnectWalletButton.style.display = 'none';
+    }
+
+    connectWalletButton.addEventListener('click', onConnectWallet);
+    disconnectWalletButton.addEventListener('click', onDisconnectWallet);
+}
+
+
+function setupNetworksControll() {
+    const addNetworkButton = document.getElementById('addNetwork');
+    const dialog = document.getElementById('dialog');
+    const saveButton = document.getElementById('save');
+    const cancelButton = document.getElementById('cancel');
+    const networkIdInput = document.getElementById('networkId');
+    const contractAddressInput = document.getElementById('contractAddress');
+
+    addNetworkButton.addEventListener('click', () => {
+        dialog.style.display = 'block';
+    });
+
+    cancelButton.addEventListener('click', () => {
+        dialog.style.display = 'none';
+    });
+
+    saveButton.addEventListener('click', () => {
+        const networkId = networkIdInput.value;
+        const contractAddress = contractAddressInput.value;
+
+        let networks = localStorage.getItem('networks');
+        if (networks) {
+            networks = JSON.parse(networks);
+        } else {
+            networks = {};
+        }
+
+        networks[networkId] = contractAddress;
+
+        localStorage.setItem('networks', JSON.stringify(networks));
+
+        dialog.style.display = 'none';
+    });
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
+    setupNetworksControll();
+    await setupWalletButtons();
+
     await connectWallet();
 
     const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
+
     provider.on("network", (newNetwork, oldNetwork) => {
         console.log("Switching from ", oldNetwork, "to", newNetwork);
         if (oldNetwork) {
@@ -186,7 +256,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const name = await vault.name();
             const symbol = await vault.symbol();
             const vaultTotalShares = await vault.totalSupply();
-            const vaultTotalAssets =await vault.totalAssets();
+            const vaultTotalAssets = await vault.totalAssets();
             const vaultSharePrice = vaultTotalAssets / vaultTotalShares;
 
             const vaultOurShares = await vault.balanceOf(contractAddress);

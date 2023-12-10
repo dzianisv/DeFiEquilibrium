@@ -59,8 +59,9 @@ and then run
 
 Export env variables
 
-```bash
-ETH_WALLET_SEED=
+```env
+ETH_WALLET_SEED="test test test test test test test test test test test junk"
+ETH_WALLET_ADDRESS=0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
 ETH_RPC_URL=http://localhost:8545
 ```
 
@@ -78,9 +79,8 @@ and then deploy smart contract
 
 set the address of the AssetManager in the .config.json and start webpack dev server
 
-```bash
-cd webapp
-npm run serve
+```shell
+cd webapp-bootstrap; python3 -m http.server
 ```
 
 and then `open localhost:8081`
