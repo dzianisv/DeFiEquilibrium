@@ -52,6 +52,11 @@ contract AssetManagerTest is Test {
         console2.log("reinvested: ", reinvested);
         require(reinvested == vaults.length, "reinvest() failed");
 
+        console2.log("Perfomance indexes", vaults.length);
+        for (uint i = 0; i < vaults.length; i++) {
+            console2.log(vaults[i].name(), aManager.getPerfomanceIndex(IERC4626(address(vaults[i]))));
+        }
+
         coin.mint(msg.sender, amount);
         require(coin.totalSupply() == amount, "invalid total supply");
         require(coin.balanceOf(msg.sender) == amount, "invalid balance");

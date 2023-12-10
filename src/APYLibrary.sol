@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 library APYLibrary {
     using SafeMath for uint256;
 
-    function pricePerShare(IERC4626 _vault) internal returns (uint256) {
+    function pricePerShare(IERC4626 _vault) internal view returns (uint256) {
         // IERC20 asset = IERC20(_vault.asset());
         // this code assumes that asset.decimals() == vault.decimals();
         // TODO: implement this with consideration that totalAssets() could be much less then vault.totalSupply()

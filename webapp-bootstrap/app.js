@@ -19,7 +19,10 @@ const ERC4626_ABI = [
     "function name() external view returns (string memory)",
     "function symbol() external view returns (string memory)",
     "function getVaults() public view returns (address[] memory)",
-    "function convertToAssets(uint256 shares) external view returns (uint256 assets)"
+    "function convertToAssets(uint256 shares) external view returns (uint256 assets)",
+    "function getPerfomanceIndex(address _vault) public view returns (int256)",
+    "function addVault(address _vault) public",
+    "function removeVault(address _vault) public",
 ];
 
 const ERC20_ABI = [
@@ -176,6 +179,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Create ERC4626 contract instance
             const vault = new ethers.Contract(address, ERC4626_ABI, signer); // Ensure you have the ABI for ERC4626
 
+            const perfomanceIndex = await assetManagerContract.getPerfomanceIndex(address);
+
             // Fetch the necessary data
             const name = await vault.name();
             const symbol = await vault.symbol();
@@ -192,7 +197,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             items.push({
-                name, symbol, vaultTotalShares, vaultTotalAssets, vaultSharePrice, vaultOurShares, vaultOurAssets,  holdingPercentage
+                name, symbol, vaultTotalShares, vaultTotalAssets, vaultSharePrice, vaultOurShares, vaultOurAssets,  holdingPercentage, perfomanceIndex
             });
         }
         updateVaults(items);

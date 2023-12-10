@@ -9,7 +9,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol";
 
-
 import "./APYLibrary.sol";
 
 contract AssetManager is ERC4626Upgradeable, Ownable {
@@ -27,9 +26,7 @@ contract AssetManager is ERC4626Upgradeable, Ownable {
 
     uint8 public diversification = 3;
 
-    function initialize(
-        IERC20Metadata _underlyingAsset
-    ) public initializer {
+    function initialize(IERC20Metadata _underlyingAsset) public initializer {
         __ERC20_init(
             string.concat(
                 "Assets Manager Tokenized Yield-bearing vault for ",
@@ -58,9 +55,7 @@ contract AssetManager is ERC4626Upgradeable, Ownable {
         return super._msgData();
     }
 
-    function addBeefyVault(
-        IVault _vault
-    ) public onlyOwner returns (IERC4626) {
+    function addBeefyVault(IVault _vault) public onlyOwner returns (IERC4626) {
         BeefyWrapper wraper = new BeefyWrapper();
         wraper.initialize(address(_vault), _vault.name(), _vault.symbol());
         IERC4626 vault = IERC4626(address(wraper));
@@ -100,6 +95,19 @@ contract AssetManager is ERC4626Upgradeable, Ownable {
         }
 
         return total;
+    }
+
+    function getPerfomanceIndex(IERC4626 _vault) public view returns (int256) {
+        for (uint i = 0; i < vaults.length; i++) {
+            Vault storage v = vaults[i];
+            if (v.vault == _vault) {
+                uint256 prevSharePrice = v.sharePrice;
+                uint256 currentSharePrice = v.vault.pricePerShare();
+                return int256(currentSharePrice) - int256(prevSharePrice);
+            }
+        }
+
+        return 0;
     }
 
     function reinvest() public onlyOwner returns (uint256) {
@@ -157,19 +165,21 @@ contract AssetManager is ERC4626Upgradeable, Ownable {
             }
         }
 
-        uint countToReinvest = vaultsForReinvestment.length - activeVaults.length;
+        uint countToReinvest = vaultsForReinvestment.length -
+            activeVaults.length;
 
         // Deposit all available assets evenly across the top-performing vaults
-            uint256 amountToDeposit = assetToken
-                .balanceOf(address(this))
-                .div(countToReinvest);
+        uint256 amountToDeposit = assetToken.balanceOf(address(this)).div(
+            countToReinvest
+        );
 
         // Deposit into top-performing vaults
         for (uint i = 0; i < vaultsForReinvestmentN; i++) {
-            IERC4626 currentVault = IERC4626(
-                vaultsForReinvestment[i]
+            IERC4626 currentVault = IERC4626(vaultsForReinvestment[i]);
+            assetToken.increaseAllowance(
+                address(currentVault),
+                amountToDeposit
             );
-            assetToken.increaseAllowance(address(currentVault), amountToDeposit);
             currentVault.deposit(amountToDeposit, address(this));
 
             // Add the vault to activeVaults
@@ -189,7 +199,10 @@ contract AssetManager is ERC4626Upgradeable, Ownable {
         if (depositAmount > 0) {
             for (uint i = 0; i < activeVaults.length; i++) {
                 IERC4626 currentVault = activeVaults[i];
-                assetToken.increaseAllowance(address(currentVault), depositAmount);
+                assetToken.increaseAllowance(
+                    address(currentVault),
+                    depositAmount
+                );
                 currentVault.deposit(depositAmount, address(this));
             }
         }
@@ -231,12 +244,20 @@ contract AssetManager is ERC4626Upgradeable, Ownable {
         return indices;
     }
 
-    function withdraw(uint256 assets, address receiver, address owner) public virtual override(ERC4626Upgradeable) returns (uint256) {
+    function withdraw(
+        uint256 assets,
+        address receiver,
+        address owner
+    ) public virtual override(ERC4626Upgradeable) returns (uint256) {
         _requireAssets(assets);
         return super.withdraw(assets, receiver, owner);
     }
 
-    function redeem(uint256 shares, address receiver, address owner) public virtual override(ERC4626Upgradeable) returns (uint256) {
+    function redeem(
+        uint256 shares,
+        address receiver,
+        address owner
+    ) public virtual override(ERC4626Upgradeable) returns (uint256) {
         _requireAssets(convertToAssets(shares));
         return super.redeem(shares, receiver, owner);
     }
@@ -245,23 +266,38 @@ contract AssetManager is ERC4626Upgradeable, Ownable {
     function _requireAssets(uint256 assets) internal {
         IERC20 assetToken = IERC20(asset());
         uint i = 0;
-        while (assets > assetToken.balanceOf(address(this)) && i < activeVaults.length) {
+        while (
+            assets > assetToken.balanceOf(address(this)) &&
+            i < activeVaults.length
+        ) {
             IERC4626 vault = IERC4626(activeVaults[i]);
-            vault.withdraw(assets.min(vault.totalAssets()), address(this), address(this));
+            vault.withdraw(
+                assets.min(vault.totalAssets()),
+                address(this),
+                address(this)
+            );
             i++;
         }
 
-        require(assets <= assetToken.balanceOf(address(this)), "no enough tokens");
+        require(
+            assets <= assetToken.balanceOf(address(this)),
+            "no enough tokens"
+        );
     }
 
-    function deposit(uint256 assets, address receiver) public virtual override(ERC4626Upgradeable) returns (uint256) {
+    function deposit(
+        uint256 assets,
+        address receiver
+    ) public virtual override(ERC4626Upgradeable) returns (uint256) {
         uint256 r = super.deposit(assets, receiver);
         _redistribute();
         return r;
     }
 
-
-    function mint(uint256 shares, address receiver) public virtual override(ERC4626Upgradeable) returns (uint256) {
+    function mint(
+        uint256 shares,
+        address receiver
+    ) public virtual override(ERC4626Upgradeable) returns (uint256) {
         uint256 r = super.mint(shares, receiver);
         _redistribute();
         return r;
