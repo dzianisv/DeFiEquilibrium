@@ -168,6 +168,10 @@ contract AssetManager is ERC4626Upgradeable, Ownable {
         uint countToReinvest = vaultsForReinvestment.length -
             activeVaults.length;
 
+        if (countToReinvest == 0) {
+            return countToReinvest;
+        }
+        
         // Deposit all available assets evenly across the top-performing vaults
         uint256 amountToDeposit = assetToken.balanceOf(address(this)).div(
             countToReinvest

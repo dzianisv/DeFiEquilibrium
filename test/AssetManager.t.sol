@@ -79,6 +79,8 @@ contract AssetManagerTest is Test {
             console2.log("name()", vault.name());
         }
 
+        aManager.reinvest();
+
         console2.log("AssetManager.totalAssets()", aManager.totalAssets());
         console2.log("AssetManager.totalSupply()", aManager.totalSupply());
         console2.log("AssetManager.balanceOf(msg.sender)", aManager.balanceOf(msg.sender));
