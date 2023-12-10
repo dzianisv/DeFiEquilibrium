@@ -28,6 +28,18 @@ DeFi AssetsManager focuses on managing a series of yield-bearing vaults. The mai
 ![](doc/WebappDemo.png)
 
 
+# Development
+
+## Requirements
+
+- [Foundry](https://book.getfoundry.sh/getting-started/installation)
+
+```shell
+curl -L https://foundry.paradigm.xyz | bash
+source ~/.zshenv
+foundryup
+```
+
 # Deployment
 
 Create .env or export the following env variables:
