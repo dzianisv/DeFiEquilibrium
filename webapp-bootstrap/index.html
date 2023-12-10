@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeFi Strategy Manager</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container mt-5">
+
+        <h1>ERC4626 DeFi Asset Manager</h1>
+
+        <h3>Wallet</h3>
+        <div>Address: <span id="walletInfo"></span></div>
+        <div>Network: <span id="networkInfo"></span></div>
+        <div>Assets Balance: <span id="balance"></span></div>
+
+        <h3>ERC4626 Stake</h3>
+        <div>Shares: <span id="shares">0</span></div>
+        <div>Total Assets: <span id="assets">0</span></div>
+
+        <div class="mt-3">
+            <label>Amount:</label>
+            <input type="text" id="amountInput" class="form-control">
+        </div>
+
+
+        <button id="connectWalletBtn" class="btn btn-info mt-2">Connect Wallet</button>
+        <button id="reinvestBtn" class="btn btn-primary mt-2">Reinvest</button>
+        <button id="depositBtn" class="btn btn-success mt-2">Deposit Assets</button>
+        <button id="withdrawBtn" class="btn btn-danger mt-2">Withdraw Assets</button>
+        <button id="redeemBtn" class="btn btn-warning mt-2">Redeem Shares</button>
+
+        <div class="mt-3">
+            <label>Vault Address:</label>
+            <input type="text" id="address" class="form-control">
+        </div>
+
+        <button id="addVault" class="btn btn-primary mt-2">Add</button>
+        <button id="removeVault" class="btn btn-danger mt-2">Remove</button>
+    </div>
+    <div>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Symbol</th>
+                    <th>Total Shares</th>
+                    <th>TVL</th>
+                    <th>Our Shares</th>
+                    <th>Holding %</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="vaultsTable">
+                <!-- Rows will be populated here -->
+            </tbody>
+        </table>
+
+    </div>
+    <script src="https://cdn.ethers.io/lib/ethers-5.0.umd.min.js"></script>>
+    <script src="app.js"></script>
+</body>
+
+</html>
