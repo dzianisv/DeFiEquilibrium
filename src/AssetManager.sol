@@ -60,6 +60,8 @@ contract AssetManager is ERC4626Upgradeable, Ownable {
     // TODO: 3. Inefficient Looping: The addVault and removeVault functions loop through the entire vaults array to check if a vault exists or to remove a vault. This could be inefficient as the number of vaults increases. Consider using a mapping for constant time lookups and deletions.
     function addVault(IERC4626 _vault) public onlyOwner {
         require(address(_vault) != address(0), "invalid vault address");
+        require(_vault.asset() == asset(), "invalid vault asset");
+
         for (uint256 i = 0; i < vaults.length; i++) {
             require(vaults[i].vault != _vault, "Vault already exists");
         }

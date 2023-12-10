@@ -4,7 +4,7 @@ const contracts = {
 
 
 const txOptions = {
-    gasLimit: 1 * 10 ** 6
+    gasLimit: 5 * 10 ** 6
 };
 
 const ERC4626_ABI = [
@@ -118,15 +118,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Reinvest
     document.getElementById('reinvestBtn').addEventListener('click', async () => {
         try {
-            const tx = await assetManagerContract.reinvest(txOptions);
+            const tx = await assetManagerContract.reinvest();
             await tx.wait();
             fetchAll();
+            alert("Reinvested");
         } catch (error) {
-            // console.error("Reinvest failed:", error);
-            // alert(JSON.stringify(error));
+            console.error("Reinvest failed:", error);
+            alert(JSON.stringify(error));
         }
-
-        alert("Reinvested");
     });
 
     // Deposit

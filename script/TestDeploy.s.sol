@@ -67,7 +67,7 @@ contract TestDeploy is Script {
 
 }
 
-contract TestYield is Script {
+contract Yield is Script {
     function run() public {
         address[5] memory vaults = [
             address(0xdd1962fAB14a8635aD037B5d59DAd67361e1bA3B),
@@ -82,6 +82,15 @@ contract TestYield is Script {
             TestERC4626Vault vault = TestERC4626Vault(vaults[i]);
             vault.yield((i+1)* 10);
         }
+        vm.stopBroadcast();
+    }
+}
+
+contract Reinvest is Script {
+    function run() public {
+        vm.startBroadcast();
+        AssetManager m = AssetManager(address(0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512));
+        m.reinvest();
         vm.stopBroadcast();
     }
 }
