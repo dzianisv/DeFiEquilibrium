@@ -29,12 +29,14 @@ const ERC20_ABI = [
     "function symbol() external view returns (string memory)"
 ];
 
+// returns provider
 async function connectWallet() {
     if (window.ethereum) {
         try {
             // Request account access
             const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-            return accounts[0];  // Return the first account address
+            console.log("Connected to the wallet", accounts);
+            return new ethers.providers.Web3Provider(window.ethereum, "any");
         } catch (error) {
             console.error("User denied account access");
         }
@@ -43,79 +45,8 @@ async function connectWallet() {
     }
 }
 
-async function setupWalletButtons() {
-    let provider;
-    const connectWalletButton = document.getElementById('connectWalletBtn');
-    const disconnectWalletButton = document.getElementById('disconnectWalletBtn');
-
-    async function onConnectWallet() {
-        if (window.ethereum) {
-            try {
-                const accounts = await connectWallet();
-                console.log("Connected to the wallet", accounts);
-                connectWalletButton.style.display = 'none';
-                disconnectWalletButton.style.display = 'block';
-            } catch (error) {
-                console.error("User denied account access");
-            }
-        } else {
-            console.error('Non-Ethereum browser detected. Consider installing MetaMask!');
-        }
-    }
-
-    function onDisconnectWallet() {
-        provider = null;
-        connectWalletButton.style.display = 'block';
-        disconnectWalletButton.style.display = 'none';
-    }
-
-    connectWalletButton.addEventListener('click', onConnectWallet);
-    disconnectWalletButton.addEventListener('click', onDisconnectWallet);
-}
-
-
-function setupNetworksControll() {
-    const addNetworkButton = document.getElementById('addNetwork');
-    const dialog = document.getElementById('dialog');
-    const saveButton = document.getElementById('save');
-    const cancelButton = document.getElementById('cancel');
-    const networkIdInput = document.getElementById('networkId');
-    const contractAddressInput = document.getElementById('contractAddress');
-
-    addNetworkButton.addEventListener('click', () => {
-        dialog.style.display = 'block';
-    });
-
-    cancelButton.addEventListener('click', () => {
-        dialog.style.display = 'none';
-    });
-
-    saveButton.addEventListener('click', () => {
-        const networkId = networkIdInput.value;
-        const contractAddress = contractAddressInput.value;
-
-        let networks = localStorage.getItem('networks');
-        if (networks) {
-            networks = JSON.parse(networks);
-        } else {
-            networks = {};
-        }
-
-        networks[networkId] = contractAddress;
-
-        localStorage.setItem('networks', JSON.stringify(networks));
-
-        dialog.style.display = 'none';
-    });
-}
-
 document.addEventListener('DOMContentLoaded', async () => {
-    setupNetworksControll();
-    await setupWalletButtons();
-
-    await connectWallet();
-
-    const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
+    const provider = await connectWallet();
 
     provider.on("network", (newNetwork, oldNetwork) => {
         console.log("Switching from ", oldNetwork, "to", newNetwork);
@@ -124,7 +55,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-
+ 
     const signer = provider.getSigner();
     const walletAddress = await signer.getAddress();
     const contractAddress = contracts[(await provider.getNetwork()).chainId];
@@ -134,7 +65,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     const assetManagerContract = new ethers.Contract(contractAddress, ERC4626_ABI, signer);
-    const assetTokenContract = new ethers.Contract(await assetManagerContract.asset(), ERC20_ABI, signer);
+    try {
+        const assetSymbol = await assetManagerContract.asset();
+    } catch (err) {
+        console.error("failed to query asset()", err);
+        return;
+    }
+    const assetTokenContract = new ethers.Contract(assetSymbol, ERC20_ABI, signer);
 
     async function updateWalletInfo() {
         const network = await provider.getNetwork()
@@ -143,7 +80,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById("walletInfo").innerText = walletAddress;
         document.getElementById("networkInfo").innerText = `${network.chainId}/${network.name}`;
     }
-    updateWalletInfo();
 
     // Fetch balance and display
     async function fetchShares() {
@@ -173,7 +109,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateVaultsTable();
     }
 
-    fetchBalances();
+    try {
+        await updateWalletInfo();
+        await fetchBalances();
+    } catch(err) {
+        console.error("failed to query blockchain data", err);
+    }
 
     setInterval(() => {
         fetchBalances();
@@ -232,11 +173,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    // Connect Wallet button event listener
-    document.getElementById('connectWalletBtn').addEventListener('click', async () => {
-        await connectWallet();
-        fetchBalances();
-    });
 
     async function updateVaultsTable() {
         const tableBody = document.getElementById('vaultsTable');
