@@ -6,14 +6,12 @@ import "@openzeppelin/contracts/interfaces/IERC4626.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts-upgradeable/utils/math/MathUpgradeable.sol";
 
 import "./APYLibrary.sol";
 
 contract AssetManager is ERC4626Upgradeable, Ownable {
     using APYLibrary for IERC4626;
-    using SafeMath for uint256;
     using MathUpgradeable for uint256;
 
     struct Vault {
@@ -63,13 +61,16 @@ contract AssetManager is ERC4626Upgradeable, Ownable {
         return vault;
     }
 
+    // TODO: 3. Inefficient Looping: The addVault and removeVault functions loop through the entire vaults array to check if a vault exists or to remove a vault. This could be inefficient as the number of vaults increases. Consider using a mapping for constant time lookups and deletions.
     function addVault(IERC4626 _vault) public onlyOwner {
+        require(address(_vault) != address(0), "invalid vault address");
         for (uint256 i = 0; i < vaults.length; i++) {
             require(vaults[i].vault != _vault, "Vault already exists");
         }
         vaults.push(Vault(_vault, _vault.pricePerShare()));
     }
 
+    // TODO: 3. Inefficient Looping: The addVault and removeVault functions loop through the entire vaults array to check if a vault exists or to remove a vault. This could be inefficient as the number of vaults increases. Consider using a mapping for constant time lookups and deletions.
     function removeVault(IERC4626 _vault) public onlyOwner {
         for (uint256 i = 0; i < vaults.length; i++) {
             if (vaults[i].vault == _vault) {
@@ -171,11 +172,10 @@ contract AssetManager is ERC4626Upgradeable, Ownable {
         if (countToReinvest == 0) {
             return countToReinvest;
         }
-        
+
         // Deposit all available assets evenly across the top-performing vaults
-        uint256 amountToDeposit = assetToken.balanceOf(address(this)).div(
-            countToReinvest
-        );
+        uint256 amountToDeposit = assetToken.balanceOf(address(this)) / countToReinvest;
+  
 
         // Deposit into top-performing vaults
         for (uint i = 0; i < vaultsForReinvestmentN; i++) {
@@ -197,9 +197,8 @@ contract AssetManager is ERC4626Upgradeable, Ownable {
     function _redistribute() internal {
         ERC20 assetToken = ERC20(asset());
         // redistribute after depositing
-        uint depositAmount = assetToken.balanceOf(address(this)).div(
-            activeVaults.length
-        );
+        uint depositAmount = assetToken.balanceOf(address(this)) / activeVaults.length;
+    
         if (depositAmount > 0) {
             for (uint i = 0; i < activeVaults.length; i++) {
                 IERC4626 currentVault = activeVaults[i];

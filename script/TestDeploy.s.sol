@@ -13,7 +13,7 @@ import "../test/TestERC4626Vault.sol";
 
 contract TestDeploy is Script {
     function generateRandomNumber() public view returns (uint) {
-        uint randomNumber = uint(keccak256(abi.encodePacked(block.timestamp, block.difficulty, msg.sender))) % 100;
+        uint randomNumber = uint(keccak256(abi.encodePacked(block.timestamp, block.prevrandao, msg.sender))) % 100;
         return randomNumber;
     }
 
