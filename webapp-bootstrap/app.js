@@ -1,5 +1,5 @@
 const contracts = {
-    31337: "0x8488A9536320Cc11D61c8681c09A726318C167f3",
+    31337: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
 };
 
 
@@ -28,6 +28,7 @@ const ERC20_ABI = [
     "function name() external view returns (string memory)",
     "function symbol() external view returns (string memory)"
 ];
+
 
 // returns provider
 async function connectWallet() {
@@ -65,59 +66,40 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     const assetManagerContract = new ethers.Contract(contractAddress, ERC4626_ABI, signer);
-    try {
-        const assetSymbol = await assetManagerContract.asset();
-    } catch (err) {
-        console.error("failed to query asset()", err);
-        return;
-    }
+    const assetSymbol = await assetManagerContract.asset();
     const assetTokenContract = new ethers.Contract(assetSymbol, ERC20_ABI, signer);
-
-    async function updateWalletInfo() {
-        const network = await provider.getNetwork()
-
-        document.getElementById("connectWalletBtn").hidden = true;
-        document.getElementById("walletInfo").innerText = walletAddress;
-        document.getElementById("networkInfo").innerText = `${network.chainId}/${network.name}`;
-    }
 
     // Fetch balance and display
     async function fetchShares() {
         const balance = await assetManagerContract.balanceOf(walletAddress);
         const total = await assetManagerContract.totalSupply();
         const symbol = await assetManagerContract.symbol();
-        document.getElementById('shares').innerText = ethers.utils.formatEther(balance) + "/" + ethers.utils.formatEther(total) + " " + symbol;
+        updateShares(balance, total, symbol);
     }
 
     // Fetch balance and display
     async function fetchAssets() {
         const balance = await assetManagerContract.totalAssets();
         const symbol = await assetTokenContract.symbol();
-        document.getElementById('assets').innerText = ethers.utils.formatEther(balance) + " " + symbol;
+        updateInvestedAssets(balance, symbol);
     }
 
     async function fetchBalance() {
         const balance = await assetTokenContract.balanceOf(walletAddress);
         const symbol = await assetTokenContract.symbol();
-        document.getElementById('balance').innerText = ethers.utils.formatEther(balance) + " " + symbol;
+        updateNonInvestedAssets(balance, symbol);
     }
 
-    async function fetchBalances() {
+    async function fetchAll() {
         fetchAssets();
         fetchShares();
         fetchBalance();
         updateVaultsTable();
     }
 
-    try {
-        await updateWalletInfo();
-        await fetchBalances();
-    } catch(err) {
-        console.error("failed to query blockchain data", err);
-    }
-
+    await fetchAll();
     setInterval(() => {
-        fetchBalances();
+        fetchAll();
     }, 5000);
 
     // Reinvest
@@ -125,7 +107,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const tx = await assetManagerContract.reinvest(txOptions);
             await tx.wait();
-            fetchBalances();
+            fetchAll();
         } catch (error) {
             // console.error("Reinvest failed:", error);
             // alert(JSON.stringify(error));
@@ -140,7 +122,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const tx = await assetManagerContract.deposit(amount, await signer.getAddress());
             await tx.wait();
-            fetchBalances();
+            fetchAll();
         } catch (error) {
             console.error("Deposit failed:", error);
             alert(JSON.stringify(error));
@@ -153,7 +135,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const tx = await assetManagerContract.withdraw(amount, await signer.getAddress(), await signer.getAddress(), txOptions);
             await tx.wait();
-            fetchBalances();
+            fetchAll();
         } catch (error) {
             console.error("Withdraw failed:", error);
             alert(JSON.stringify(error));
@@ -166,7 +148,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const tx = await assetManagerContract.redeem(shares, await signer.getAddress(), await signer.getAddress(), txOptions);
             await tx.wait();
-            fetchBalances();
+            fetchAll();
         } catch (error) {
             console.error("Redeem failed:", error);
             alert(JSON.stringify(error));
@@ -175,14 +157,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
     async function updateVaultsTable() {
-        const tableBody = document.getElementById('vaultsTable');
-
-        // Clear any existing rows
-        tableBody.innerHTML = "";
-
         // Fetch the vaults
         const vaultAddresses = await assetManagerContract.getVaults();
         const totalAssets = await assetManagerContract.totalAssets();
+        let items = [];
 
         for (let address of vaultAddresses) {
             // Create ERC4626 contract instance
@@ -203,20 +181,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 holdingPercentage = (vaultOurAssets / totalAssets) * 100;
             }
 
-            // Add a row to the table
-            const row = `<tr>
-                <td>${name}</td>
-                <td>${symbol}</td>
-                <td>${ethers.utils.formatEther(vaultTotalShares)}</td>
-                <td>${ethers.utils.formatEther(vaultTotalAssets)}</td>
-                <td>${ethers.utils.formatEther(vaultOurShares)}</td>
-                <td>${holdingPercentage.toFixed(2)}%</td>
-                <td><button id="deleteButton" class="btn btn-danger mt-2">Delete</button></td>
-
-            </tr>`;
-
-            tableBody.innerHTML += row;
+            items.push({
+                name, symbol, vaultTotalShares, vaultTotalAssets, vaultSharePrice, vaultOurShares, vaultOurAssets,  holdingPercentage
+            });
         }
+        updateVaults(items);
     }
 
 });

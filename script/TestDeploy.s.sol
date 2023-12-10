@@ -41,7 +41,6 @@ contract TestDeploy is Script {
         coin.mint(msg.sender, amount);
         coin.approve(address(aManager), amount);
 
-
         vm.stopBroadcast();
     }
 }

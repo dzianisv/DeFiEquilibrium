@@ -3,25 +3,22 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>DeFi Strategy Manager</title>
-    <!-- <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet"> -->
+    <title>DeFi Equilibrium</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
     <script src="https://cdn.ethers.io/lib/ethers-5.0.umd.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="app.js"></script>
 </head>
 
 <body>
-    <script>
-        
-    </script>
-
     <nav>
         <div class="nav-wrapper">
+            <span class="brand-logo">DeFi Equilibrium</span>
             <ul id="nav-mobile" class="right">
-                <li><span class="material-icons">emoji_people</span><span id="networkInfo"></span></li>
+                <li><span class="material-icons">signal_cellular_alt</span><span id="networkInfo"></span></li>
                 <li><a href="#"><span id="balanceInfo"></span></a></li>
                 <li><a href="#"><span id="walletInfo"></span></a></li>
                 <li><a href="#" id="connectWalletBtn"><i class="material-icons">account_balance_wallet</i></a></li>
@@ -30,7 +27,6 @@
             </ul>
         </div>
     </nav>
-
     <script>
         const connectWalletButton = $('#connectWalletBtn');
         const disconnectWalletButton = $('#disconnectWalletBtn');
@@ -45,7 +41,7 @@
 
                     $("#walletInfo").text(walletAddress);
                     $("#networkInfo").text(`${network.chainId}/${network.name}`);
-                    
+
                     connectWalletButton.hide();
                     disconnectWalletButton.show();
                 } catch (error) {
@@ -58,7 +54,7 @@
 
         connectWalletButton.on('click', connect2);
 
-        disconnectWalletButton.on('click',  async () => {
+        disconnectWalletButton.on('click', async () => {
             connectWalletButton.show();
             disconnectWalletButton.hide();
             $("#walletInfo").text("");
@@ -68,34 +64,125 @@
         connect2();
     </script>
 
-    <div class="container mt-5">
-        <h3>ERC4626 Stake</h3>
-        <div>Shares: <span id="shares">0</span></div>
-        <div>Total Assets: <span id="assets">0</span></div>
+<!-- https://fonts.google.com/icons?selected=Material+Symbols+Outlined:query_stats:FILL@0;wght@400;GRAD@0;opsz@24&icon.query=chart -->
 
-        <div class="mt-3">
-            <label>Amount:</label>
-            <input type="text" id="amountInput" class="form-control">
+    <div class="row">
+        <div class="col s6 m3">
+            <div class="card">
+                <div class="card-content">
+                    <span class="card-title"><i class="material-icons">account_balance</i>Invested </span>
+                    <span id="shares">0</span></span>
+                </div>
+            </div>
         </div>
-
-        <button id="reinvestBtn" class="btn btn-primary mt-2">Reinvest</button>
-        <button id="depositBtn" class="btn btn-success mt-2">Deposit Assets</button>
-        <button id="withdrawBtn" class="btn btn-danger mt-2">Withdraw Assets</button>
-        <button id="redeemBtn" class="btn btn-warning mt-2">Redeem Shares</button>
-
-        <div class="mt-3">
-            <label>Vault Address:</label>
-            <input type="text" id="address" class="form-control">
+        <div class="col s6 m3">
+            <div class="card">
+                <div class="card-content">
+                    <span class="card-title"><i class="material-icons">wallet</i>Wallet Assets</span>
+                    <span id="walletAssets">0</span></span>
+                </div>
+            </div>
         </div>
-
-        <button id="addVault" class="btn btn-primary mt-2">Add</button>
-        <button id="removeVault" class="btn btn-danger mt-2">Remove</button>
+        <div class="col s6 m3">
+            <div class="card">
+                <div class="card-content">
+                    <span class="card-title"><i class="material-icons">analytics</i>Daily yield</span>
+                    <span id="walletAssets">12%</span></span>
+                </div>
+            </div>
+        </div>
+        <div class="col s6 m3">
+            <div class="card">
+                <div class="card-content">
+                    <span class="card-title"><i class="material-icons">query_stats</i>Avg. APY</span>
+                    <span id="walletAssets">10%</span></span>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Button trigger modal -->
+    <script>
+        function updateShares(balance, total, symbol) {
+            document.getElementById('shares').innerText = ethers.utils.formatEther(balance) + "/" + ethers.utils.formatEther(total) + " " + symbol;
+        }
+        function updateInvestedAssets(amount, symbol) {
+            document.getElementById('walletAssets').innerText = ethers.utils.formatEther(amount) + " " + symbol;
+        }
+        function updateNonInvestedAssets(amount, symbol) {
+            $('#balance').text(ethers.utils.formatEther(amount) + " " + symbol);
+        }
+    </script>
+
+    <div class="row">
+        <div class="col s6 m6">
+            <div class="card">
+                <div class="card-content">
+                    <span class="card-title"><i class="material-icons">account_balance</i>Investments controll
+                    </span>
+                    <div class="mt-3">
+                        <label>Amount:</label>
+                        <input type="text" id="amountInput" class="form-control">
+                    </div>
+                </div>
+                <div class="card-action">
+                    <div class="row">
+                        <div class="col s4">
+                            <button id="depositBtn" class="btn waves-effect waves-light">
+                                <i class="material-icons left">input</i>
+                                Deposit Assets
+                            </button>
+                        </div>
+                        <div class="col s4">
+                            <button id="withdrawBtn" class="btn waves-effect waves-light">
+                                <i class="material-icons left">output</i>
+                                Withdraw Assets
+                            </button>
+                        </div>
+
+                        <div class="col s4">
+                            <button id="redeemBtn" class="btn waves-effect waves-light">
+                                <i class="material-icons left">redeem</i>
+                                Redeem Shares
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col s6 m6">
+            <div class="card">
+                <div class="card-content">
+                    <span class="card-title"><i class="material-icons">account_balance</i>Vaults manager
+                    </span>
+                    <div class="mt-3">
+                        <label>Vault Address:</label>
+                        <input type="text" id="address" class="form-control">
+                    </div>
+                </div>
+                <div class="card-action">
+                    <div class="row">
+
+                        <div class="col s4"><button id="addVault" class="btn waves-effect waves-light">
+                                <i class="material-icons left">add</i>Add</button></div>
+
+                        <div class="col s4"><button id="removeVault" class="btn waves-effect waves-light">
+                                <i class="material-icons left">remove</i>Remove</button></div>
+
+                        <div class="col s4"><button id="reinvestBtn" class="btn waves-effect waves-light">
+                                <i class="material-icons left">autorenew</i>
+                                Reinvest
+                            </button></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Button trigger modal
     <button type="button" class="btn btn-info mt-2" data-toggle="modal" data-target="#dialog">
         Add Network
-    </button>
+    </button> -->
 
     <!-- Modal -->
     <div class="modal fade" id="dialog" tabindex="-1" role="dialog" aria-labelledby="dialogTitle" aria-hidden="true">
@@ -127,6 +214,8 @@
         </div>
     </div>
 
+
+
     <script>
         const addNetworkButton = $('#addNetwork');
         const dialog = $('#dialog');
@@ -155,7 +244,7 @@
     </script>
 
     <div>
-        <table class="table">
+        <table class="striped centered responsive-table">
             <thead>
                 <tr>
                     <th>Name</th>
@@ -171,8 +260,31 @@
                 <!-- Rows will be populated here -->
             </tbody>
         </table>
-
     </div>
+
+    <script>
+        function updateVaults(items) {
+            let newTable = "";
+
+            for (const item of items) {
+                // Add a row to the table
+                const row = `<tr>
+                <td>${item.name}</td>
+                <td>${item.symbol}</td>
+                <td>${ethers.utils.formatEther(item.vaultTotalShares)}</td>
+                <td>${ethers.utils.formatEther(item.vaultTotalAssets)}</td>
+                <td>${ethers.utils.formatEther(item.vaultOurShares)}</td>
+                <td>${item.holdingPercentage.toFixed(2)}%</td>
+                <td><button id="deleteButton" class="btn btn-danger mt-2"><i class="material-icons">delete</i></button></td>
+                </tr>`;
+
+                newTable += row;
+            }
+
+            const tableBody = document.getElementById('vaultsTable');
+            tableBody.innerHTML = newTable;
+        }
+    </script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
 </body>
