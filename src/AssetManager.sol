@@ -12,12 +12,8 @@ import "./APYLibrary.sol";
 
 contract AssetManager is ERC4626Upgradeable, Ownable {
     using APYLibrary for IERC4626;
+    using VaultLibrary for Vault;
     using MathUpgradeable for uint256;
-
-    struct Vault {
-        IERC4626 vault;
-        uint256 sharePrice;
-    }
 
     Vault[] public vaults;
     IERC4626[] public activeVaults;
@@ -102,9 +98,7 @@ contract AssetManager is ERC4626Upgradeable, Ownable {
         for (uint i = 0; i < vaults.length; i++) {
             Vault storage v = vaults[i];
             if (v.vault == _vault) {
-                uint256 prevSharePrice = v.sharePrice;
-                uint256 currentSharePrice = v.vault.pricePerShare();
-                return int256(currentSharePrice) - int256(prevSharePrice);
+                return v.getPeromanceIndex();
             }
         }
 
@@ -119,12 +113,8 @@ contract AssetManager is ERC4626Upgradeable, Ownable {
 
         for (uint i = 0; i < vaults.length; i++) {
             Vault storage v = vaults[i];
-            uint256 prevSharePrice = v.sharePrice;
-            uint256 currentSharePrice = v.vault.pricePerShare();
-            vaultsSharePriceIncrease[i] =
-                int256(currentSharePrice) -
-                int256(prevSharePrice);
-            v.sharePrice = currentSharePrice;
+            vaultsSharePriceIncrease[i] = v.getPeromanceIndex();
+            v.sharePrice = v.vault.pricePerShare();
         }
 
         // Sort vaults by share price increase
@@ -174,8 +164,8 @@ contract AssetManager is ERC4626Upgradeable, Ownable {
         }
 
         // Deposit all available assets evenly across the top-performing vaults
-        uint256 amountToDeposit = assetToken.balanceOf(address(this)) / countToReinvest;
-  
+        uint256 amountToDeposit = assetToken.balanceOf(address(this)) /
+            countToReinvest;
 
         // Deposit into top-performing vaults
         for (uint i = 0; i < vaultsForReinvestmentN; i++) {
@@ -196,9 +186,12 @@ contract AssetManager is ERC4626Upgradeable, Ownable {
 
     function _redistribute() internal {
         ERC20 assetToken = ERC20(asset());
+        require(activeVaults.length > 0, "no active vaults");
+
         // redistribute after depositing
-        uint depositAmount = assetToken.balanceOf(address(this)) / activeVaults.length;
-    
+        uint depositAmount = assetToken.balanceOf(address(this)) /
+            activeVaults.length;
+
         if (depositAmount > 0) {
             for (uint i = 0; i < activeVaults.length; i++) {
                 IERC4626 currentVault = activeVaults[i];
