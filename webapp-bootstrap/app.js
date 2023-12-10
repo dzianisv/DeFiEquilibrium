@@ -37,13 +37,23 @@ async function connectWallet() {
             // Request account access
             const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
             console.log("Connected to the wallet", accounts);
-            return new ethers.providers.Web3Provider(window.ethereum, "any");
+            const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
+
+            const signer = provider.getSigner();
+            const walletAddress = await signer.getAddress();
+            const network = await provider.getNetwork();
+            updateWallet(walletAddress, network.chainId, network.name);
+            return provider;
         } catch (error) {
             console.error("User denied account access");
         }
     } else {
         alert('Please install MetaMask or another web3 provider.');
     }
+}
+
+async function disconnectWallet() {
+    updateWallet(null, null, null);
 }
 
 document.addEventListener('DOMContentLoaded', async () => {

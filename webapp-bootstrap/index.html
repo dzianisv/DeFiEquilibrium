@@ -30,40 +30,25 @@
         const connectWalletButton = $('#connectWalletBtn');
         const disconnectWalletButton = $('#disconnectWalletBtn');
 
-        async function connect2() {
-            if (window.ethereum) {
-                try {
-                    const provider = await connectWallet();
-                    const signer = provider.getSigner();
-                    const walletAddress = await signer.getAddress();
-                    const network = await provider.getNetwork();
+        connectWalletButton.on('click', connectWallet);
+        disconnectWalletButton.on('click', disconnectWallet);
 
-                    $("#walletInfo").text(walletAddress);
-                    $("#networkInfo").text(`${network.chainId}/${network.name}`);
-
-                    connectWalletButton.hide();
-                    disconnectWalletButton.show();
-                } catch (error) {
-                    console.error("User denied account access");
-                }
+        function updateWallet(walletAddress, networkChainId, networkName) {
+            if (walletAddress) {
+                connectWalletButton.hide();
+                disconnectWalletButton.show();
+                $("#walletInfo").text(walletAddress);
+                $("#networkInfo").text(`${networkChainId}/${networkName}`);
             } else {
-                console.error('Non-Ethereum browser detected. Consider installing MetaMask!');
+                $("#walletInfo").text('');
+                $("#networkInfo").text('disconnected');
+                connectWalletButton.show();
+                disconnectWalletButton.hide();
             }
         }
-
-        connectWalletButton.on('click', connect2);
-
-        disconnectWalletButton.on('click', async () => {
-            connectWalletButton.show();
-            disconnectWalletButton.hide();
-            $("#walletInfo").text("");
-            $("#networkInfo").text("");
-        });
-
-        connect2();
     </script>
 
-<!-- https://fonts.google.com/icons?selected=Material+Symbols+Outlined:query_stats:FILL@0;wght@400;GRAD@0;opsz@24&icon.query=chart -->
+    <!-- https://fonts.google.com/icons?selected=Material+Symbols+Outlined:query_stats:FILL@0;wght@400;GRAD@0;opsz@24&icon.query=chart -->
 
     <div class="row">
         <div class="col s6 m3">

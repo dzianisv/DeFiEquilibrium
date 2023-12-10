@@ -12,6 +12,11 @@ import "../test/TestERC4626Vault.sol";
 
 
 contract TestDeploy is Script {
+    function generateRandomNumber() public view returns (uint) {
+        uint randomNumber = uint(keccak256(abi.encodePacked(block.timestamp, block.difficulty, msg.sender))) % 100;
+        return randomNumber;
+    }
+
     function run() public {
         vm.startBroadcast();
         TestCoin coin = new TestCoin();
@@ -40,7 +45,12 @@ contract TestDeploy is Script {
         uint amount = 1000 * 10** coin.decimals();
         coin.mint(msg.sender, amount);
         coin.approve(address(aManager), amount);
-        console2.log("Minted a TestCoin", msg.sender);
+
+        for (uint j = 0; j < 1; j++) {
+            for (uint i = 0; i < vaults.length; i++) {
+                vaults[i].yield((generateRandomNumber()));
+            }
+        }
 
         vm.stopBroadcast();
     }
