@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function fetchBalance() {
         const balance = await assetTokenContract.balanceOf(walletAddress);
         const symbol = await assetTokenContract.symbol();
-        updateNonInvestedAssets(balance, symbol);
+        updateWalletAssets(balance, symbol);
     }
 
     async function fetchAll() {

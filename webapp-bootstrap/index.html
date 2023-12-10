@@ -18,9 +18,8 @@
         <div class="nav-wrapper">
             <span class="brand-logo">DeFi Equilibrium</span>
             <ul id="nav-mobile" class="right">
-                <li><span class="material-icons">signal_cellular_alt</span><span id="networkInfo"></span></li>
-                <li><a href="#"><span id="balanceInfo"></span></a></li>
-                <li><a href="#"><span id="walletInfo"></span></a></li>
+                <li><a><span class="material-icons">signal_cellular_alt</span><span id="networkInfo"></span></a></li>
+                <li><a><span class="material-icons">wallet</span><span id="walletInfo"></span></a></li>
                 <li><a href="#" id="connectWalletBtn"><i class="material-icons">account_balance_wallet</i></a></li>
                 <li><a href="#" id="disconnectWalletBtn"><i class="material-icons">logout</i></a></li>
 
@@ -70,8 +69,16 @@
         <div class="col s6 m3">
             <div class="card">
                 <div class="card-content">
-                    <span class="card-title"><i class="material-icons">account_balance</i>Invested </span>
+                    <span class="card-title"><i class="material-icons">account_balance</i>Shares</span>
                     <span id="shares">0</span></span>
+                </div>
+            </div>
+        </div>
+        <div class="col s6 m3">
+            <div class="card">
+                <div class="card-content">
+                    <span class="card-title"><i class="material-icons">analytics</i>Invested Assets</span>
+                    <span id="investedAssets">0</span></span>
                 </div>
             </div>
         </div>
@@ -80,14 +87,6 @@
                 <div class="card-content">
                     <span class="card-title"><i class="material-icons">wallet</i>Wallet Assets</span>
                     <span id="walletAssets">0</span></span>
-                </div>
-            </div>
-        </div>
-        <div class="col s6 m3">
-            <div class="card">
-                <div class="card-content">
-                    <span class="card-title"><i class="material-icons">analytics</i>Daily yield</span>
-                    <span id="walletAssets">12%</span></span>
                 </div>
             </div>
         </div>
@@ -106,10 +105,10 @@
             document.getElementById('shares').innerText = ethers.utils.formatEther(balance) + "/" + ethers.utils.formatEther(total) + " " + symbol;
         }
         function updateInvestedAssets(amount, symbol) {
-            document.getElementById('walletAssets').innerText = ethers.utils.formatEther(amount) + " " + symbol;
+            document.getElementById('investedAssets').innerText = ethers.utils.formatEther(amount) + " " + symbol;
         }
-        function updateNonInvestedAssets(amount, symbol) {
-            $('#balance').text(ethers.utils.formatEther(amount) + " " + symbol);
+        function updateWalletAssets(amount, symbol) {
+            $('#walletAssets').text(ethers.utils.formatEther(amount) + " " + symbol);
         }
     </script>
 

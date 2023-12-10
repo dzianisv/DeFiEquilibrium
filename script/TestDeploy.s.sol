@@ -40,6 +40,7 @@ contract TestDeploy is Script {
         uint amount = 1000 * 10** coin.decimals();
         coin.mint(msg.sender, amount);
         coin.approve(address(aManager), amount);
+        console2.log("Minted a TestCoin", msg.sender);
 
         vm.stopBroadcast();
     }
