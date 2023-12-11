@@ -1,6 +1,6 @@
-const contracts = {
-    31337: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
-    84531: "0x89FE19E656e997306490e6eCCa4D2f7C1324461e",
+const networks = {
+    31337: {name: "localnet", contract: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"},
+    84531: {name: "Base Goerli", contract: "0x89FE19E656e997306490e6eCCa4D2f7C1324461e"},
 };
 
 
@@ -46,8 +46,16 @@ async function connectWallet() {
 
             const signer = provider.getSigner();
             const walletAddress = await signer.getAddress();
-            const network = await provider.getNetwork();
-            updateWallet(walletAddress, network.chainId, network.name);
+            const walletNetwork = await provider.getNetwork();
+            const chainId = walletNetwork.chainId;
+
+            const network = networks[chainId];
+            let networkName = walletNetwork.name;
+            if (network) {
+                networkName = network.name;
+            }
+
+            updateWallet(walletAddress, chainId, networkName);
             return provider;
         } catch (error) {
             console.error("User denied account access");
@@ -74,11 +82,15 @@ document.addEventListener('DOMContentLoaded', async () => {
  
     const signer = provider.getSigner();
     const walletAddress = await signer.getAddress();
-    const contractAddress = contracts[(await provider.getNetwork()).chainId];
-    if (!contractAddress) {
+    const chainId = (await provider.getNetwork()).chainId;
+
+    const network = networks[chainId];
+    if (!network) {
         alert("This network is not supported");
         return;
     }
+
+    const contractAddress = network.contract;
 
     const assetManagerContract = new ethers.Contract(contractAddress, ERC4626_ABI, signer);
     const assetSymbol = await assetManagerContract.asset();
