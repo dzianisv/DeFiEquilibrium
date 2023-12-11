@@ -47,10 +47,10 @@ contract TestDeploy is Script {
         coin.approve(address(aManager), amount);
         
         // fund vaults directly to simulate activity on vaults
-        for (uint i = 0; i < vaults.length; i++) {
-            coin.approve(address(vaults[i]), amount);
-            vaults[i].deposit(i * 10 ** coin.decimals(), msg.sender);
-        }
+        // for (uint i = 0; i < vaults.length; i++) {
+        //     coin.approve(address(vaults[i]), amount);
+        //     vaults[i].deposit(i * 10 ** coin.decimals(), msg.sender);
+        // }
 
         // yield test test vaults to simulate activity
         for (uint j = 0; j < 1; j++) {
@@ -87,6 +87,15 @@ contract Yield is Script {
 }
 
 contract Reinvest is Script {
+    function run() public {
+        vm.startBroadcast();
+        AssetManager m = AssetManager(address(0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512));
+        m.reinvest();
+        vm.stopBroadcast();
+    }
+}
+
+contract Reinvest2 is Script {
     function run() public {
         vm.startBroadcast();
         AssetManager m = AssetManager(address(0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512));

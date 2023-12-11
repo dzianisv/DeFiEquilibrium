@@ -186,6 +186,9 @@ contract AssetManager is ERC4626Upgradeable, Ownable {
         return reinvested;
     }
 
+    function reinvest2() public onlyOwner returns (uint256) {
+    }
+    
     function _redistribute() internal {
         ERC20 assetToken = ERC20(asset());
         require(activeVaults.length > 0, "no active vaults");

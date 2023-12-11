@@ -1,6 +1,6 @@
 const contracts = {
     31337: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
-    84531: "",
+    84531: "0x89FE19E656e997306490e6eCCa4D2f7C1324461e",
 };
 
 
@@ -10,6 +10,7 @@ const txOptions = {
 
 const ERC4626_ABI = [
     "function reinvest() public returns (uint256)",
+    "function reinvest2() public returns (uint256)",
     "function redeem(uint256 shares, address receiver, address owner) external returns (uint256 assets)",
     "function withdraw(uint256 assets, address receiver, address owner) external returns (uint256 shares)",
     "function deposit(uint256 assets, address receiver) external returns (uint256 shares)",
@@ -105,16 +106,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     async function fetchAll() {
-        fetchAssets();
-        fetchShares();
-        fetchBalance();
-        updateVaultsTable();
+        await fetchAssets();
+        await fetchShares();
+        await fetchBalance();
+        await updateVaultsTable();
     }
 
     await fetchAll();
     setInterval(() => {
         fetchAll();
-    }, 5000);
+    }, 3000);
 
     // Reinvest
     document.getElementById('reinvestBtn').addEventListener('click', async () => {
