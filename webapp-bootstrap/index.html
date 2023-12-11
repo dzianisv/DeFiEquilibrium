@@ -18,9 +18,9 @@
         <div class="nav-wrapper">
             <span class="brand-logo">DeFi Equilibrium</span>
             <ul id="nav-mobile" class="right">
-                <li><a><span class="material-icons">signal_cellular_alt</span><span id="networkInfo"></span></a></li>
-                <li><a><span class="material-icons">wallet</span><span id="walletInfo"></span></a></li>
-                <li><a href="#" id="connectWalletBtn"><i class="material-icons">account_balance_wallet</i></a></li>
+                <li><a id="networkInfo"><span class="material-icons">signal_cellular_alt</span><span id="networkDetails"></span></a></li>
+                <li><a id="walletInfo"><span class="material-icons">wallet</span><span id="walletAddress"></span></a></li>
+                <li><a href="#" id="connectWalletBtn"><i class="material-icons">wallet</i></a></li>
                 <li><a href="#" id="disconnectWalletBtn"><i class="material-icons">logout</i></a></li>
 
             </ul>
@@ -33,14 +33,17 @@
         connectWalletButton.on('click', connectWallet);
         disconnectWalletButton.on('click', disconnectWallet);
 
-        function updateWallet(walletAddress, networkChainId, networkName) {
+        function updateWallet(walletAddress, networkChainId, networkName, contractAddress) {
             if (walletAddress) {
                 connectWalletButton.hide();
                 disconnectWalletButton.show();
-                $("#walletInfo").text(walletAddress);
-                $("#networkInfo").text(`${networkChainId}/${networkName}`);
+                $("#walletInfo").show();
+                $("#walletAddress").text(walletAddress);
+
+                $("#networkInfo").attr('href', contractAddress);
+                $("#networkDetails").text(`${networkChainId}/${networkName}`);
             } else {
-                $("#walletInfo").text('');
+                $("#walletInfo").hide();
                 $("#networkInfo").text('disconnected');
                 connectWalletButton.show();
                 disconnectWalletButton.hide();

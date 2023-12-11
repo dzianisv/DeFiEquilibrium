@@ -1,8 +1,7 @@
 const networks = {
     31337: {name: "localnet", contract: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512"},
-    84531: {name: "Base Goerli", contract: "0x89FE19E656e997306490e6eCCa4D2f7C1324461e"},
+    84531: {name: "Base Goerli", contract: "0xb44a07d022c5c6f6c80dbcd8fdb3a56c24102999", explorer: "https://goerli.basescan.org/address"},
 };
-
 
 const txOptions = {
     gasLimit: 5 * 10 ** 6
@@ -51,11 +50,14 @@ async function connectWallet() {
 
             const network = networks[chainId];
             let networkName = walletNetwork.name;
+            let contractAddress = '';
+
             if (network) {
                 networkName = network.name;
+                contractAddress = `${network.explorer}/${network.contract}`;
             }
 
-            updateWallet(walletAddress, chainId, networkName);
+            updateWallet(walletAddress, chainId, networkName, contractAddress);
             return provider;
         } catch (error) {
             console.error("User denied account access");
