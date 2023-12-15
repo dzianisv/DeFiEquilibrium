@@ -2,6 +2,11 @@
 
 DeFi AssetsManager focuses on managing a series of yield-bearing vaults. The main idea is to effectively handle and optimize the yield obtained from these vaults.
 
+[LiveDemo](https://defiequilibrium.netlify.app)
+
+[![youtube](doc/youtube.webp)](https://youtu.be/3hHWHVTK5Oo)
+
+
 ## Main Features:
 
 **Vault Management**: Allows the owner to add or remove vaults. Additionally, the contract offers the ability to wrap Beefy Vaults, making them compatible with this system.
